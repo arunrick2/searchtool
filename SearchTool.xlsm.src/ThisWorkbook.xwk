@@ -1,0 +1,92 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "ThisWorkbook"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+
+Private Sub Workbook_Open()
+AddButContextMenu
+End Sub
+
+Sub SetupRightClickMenu()
+
+    Dim MyMenu As Object
+    
+    'Sleep (1000)
+    
+    Set MyMenu = Application.ShortcutMenus(xlWorksheetCell).MenuItems.AddMenu("TSS Tools", 1)
+    
+    With MyMenu.MenuItems
+        .Add "Export Current Sheet to TSS", "SendCToTSS", , 1, , ""
+        .Add "Export All Sheets to TSS", "SendAToTSS", , 2, , ""
+    End With
+
+    GetServerPath
+
+End Sub
+'Reference https://stackoverflow.com/questions/60276171/how-to-apply-application-shortcutmenus-so-the-macro-still-appears-when-right-cli
+Sub AddButContextMenu()
+  Dim CMenu_Cell As CommandBar, MySubMCell As CommandBarControl
+  Dim CMenu_Table As CommandBar, MySubMTable As CommandBarControl
+    'Delete the controls first, in order to avoid duplicates
+    Call DeleteFromCellMenu
+    'Set ContextMenu to the Cell menu and List Range Popup
+    Set CMenu_Cell = Application.CommandBars(35)  'Cell menu
+    Set CMenu_Table = Application.CommandBars(71) 'List Range Popup
+     Set MySubMCell = CMenu_Cell.Controls.Add(Type:=msoControlPopup, Before:=3)
+     Set MySubMTable = CMenu_Table.Controls.Add(Type:=msoControlPopup, Before:=3)
+
+    With MySubMCell
+        .Caption = "Opportunities"
+        .Tag = "My_Tag"
+        With .Controls.Add(Type:=msoControlButton)
+            .OnAction = "'" & ThisWorkbook.Name & "'!" & "SendCToTSS"
+            .Caption = "Save Current Sheet to TSS"
+        End With
+        With .Controls.Add(Type:=msoControlButton)
+            .OnAction = "'" & ThisWorkbook.Name & "'!" & "editOpportunity"
+            .Caption = "Import Phasing from TSS"
+        End With
+    End With
+    With MySubMTable
+        .Caption = "Opportunities"
+        .Tag = "My_Tag"
+        With .Controls.Add(Type:=msoControlButton)
+            .OnAction = "'" & ThisWorkbook.Name & "'!" & "openOpportunity"
+            .Caption = "Open"
+        End With
+        With .Controls.Add(Type:=msoControlButton)
+            .OnAction = "'" & ThisWorkbook.Name & "'!" & "editOpportunity"
+            .Caption = "Edit"
+        End With
+    End With
+
+    CMenu_Cell.Controls(4).BeginGroup = True 'add separator
+    CMenu_Table.Controls(4).BeginGroup = True 'add separator
+    
+    'Alternate Menu from right click
+    SetupRightClickMenu
+End Sub
+Sub DeleteFromCellMenu()
+    Dim ContextMCell As CommandBar, ContextMTable As CommandBar
+    Dim ctrl As CommandBarControl
+
+    Set ContextMCell = Application.CommandBars(35)  'Cell
+    Set ContextMTable = Application.CommandBars(71) 'List Range Popup
+
+    For Each ctrl In ContextMCell.Controls
+        If ctrl.Tag = "My_Tag" Then
+            ctrl.Delete
+        End If
+    Next ctrl
+    For Each ctrl In ContextMTable.Controls
+        If ctrl.Tag = "My_Tag" Then
+            ctrl.Delete
+        End If
+    Next ctrl
+End Sub
+

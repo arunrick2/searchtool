@@ -1,0 +1,130 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "SpecRunner1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Dim ToggleFlg As Boolean
+
+Private Sub TextBox1_Change()
+ Application.OnKey "{TAB}", "xtermmod"
+    If KeyCode = Asc(vbCr) Then
+   xtermmod
+    End If
+
+End Sub
+    
+Private Sub TextBox1_KeyUp(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+    If KeyCode = 13 Then xtermmod
+End Sub
+
+Private Sub Worksheet_SelectionChange(ByVal Target As Range)
+    If Target.Address = "$M$1" Then
+        Call View_AMS
+    End If
+    If Target.Address = "$M$2" Then
+        Call View_BAR
+    End If
+    If Target.Address = "$M$3" Then
+        Call View_BRU
+    End If
+    If Target.Address = "$O$1" Then
+        Call View_AMSO
+    End If
+    If Target.Address = "$O$2" Then
+        Call View_BARO
+    End If
+    If Target.Address = "$O$3" Then
+        Call View_BRUO
+    End If
+    If Target.Address = "$I$4" Then
+        If Target.Value = "Browse" Then
+            If Not IsWorkBookOpen("DragandDrop.xlam") Then
+                Workbooks.Open Application.ActiveWorkbook.Path & "\DragandDrop.xlam"
+            End If
+            strResult = Application.Run("DragandDrop.xlam!ShowDrawNDropForm", CStr(ThisWorkbook.Sheets("XtermRunner").TextBox1.Text))
+            If strResult = "" Then clearDisplay
+            Range("C4:H4") = strResult
+            ThisWorkbook.Sheets("XtermRunner").Range("A1").Select
+        End If
+    End If
+    If Target.Address = "$J$4" Then
+        If Target.Value = "Save" Then
+            If Not IsWorkBookOpen("SearchAddin.xlam") Then
+                Workbooks.Open Application.ActiveWorkbook.Path & "\SearchAddin.xlam"
+            End If
+            Dim cts As String
+            Dim ResltBox As String
+            Dim tagVal As String
+            cts = Category_selected
+            tagVal = ThisWorkbook.Sheets("XtermRunner").TextBox1.Text
+            If tagVal = "" Then
+                Application.StatusBar = "Enter Search Keywords to continue"
+                End
+            End If
+            
+            'If ResltBox = "" Then
+            '    Application.StatusBar = "Enter the Result to be saved"
+            '    End
+            'End If
+            ResltBox = ThisWorkbook.Sheets("XtermRunner").Range("C4").Value
+            If ResltBox <> "" Then ResltBox = tagVal & "@@" & ResltBox
+            If ResltBox = "" Then ResltBox = Application.Run("DragandDrop.xlam!GetResult")
+            
+            strResult = Application.Run("SearchAddin.xlam!AddSearchResult", cts, ResltBox, tagVal)
+            ThisWorkbook.Sheets("XtermRunner").Range("A1").Select
+        End If
+    End If
+End Sub
+Sub View_AMS()
+    Selection.Font.Bold = True
+    Range("M2").Font.Bold = False
+    Range("M3").Font.Bold = False
+    Toggle
+End Sub
+Sub View_BAR()
+    Selection.Font.Bold = True
+    Range("M1").Font.Bold = False
+    Range("M3").Font.Bold = False
+    Toggle
+End Sub
+Sub View_BRU()
+    Selection.Font.Bold = True
+    Range("M1").Font.Bold = False
+    Range("M2").Font.Bold = False
+    Toggle
+End Sub
+Sub View_AMSO()
+    Selection.Font.Bold = True
+    Range("O2").Font.Bold = False
+    Range("O3").Font.Bold = False
+    Toggle
+End Sub
+Sub View_BARO()
+    Selection.Font.Bold = True
+    Range("O1").Font.Bold = False
+    Range("O3").Font.Bold = False
+    Toggle
+End Sub
+Sub View_BRUO()
+    Selection.Font.Bold = True
+    Range("O1").Font.Bold = False
+    Range("O2").Font.Bold = False
+    Toggle
+End Sub
+Sub Toggle()
+    With ThisWorkbook.Sheets("XtermRunner")
+        If ToggleFlg = True Then
+            '.Columns("O:O").Select
+            .Columns("O:O").EntireColumn.Hidden = True
+        Else
+            '.Columns("N:P").Select
+            .Columns("N:P").EntireColumn.Hidden = False
+        End If
+        If ToggleFlg = True Then ToggleFlg = False Else ToggleFlg = True
+        .Range("A1").Select
+    End With
+End Sub
